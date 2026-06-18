@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Site Management — Rough POC</title>
+<style>
+  :root{
+    --blue:#1564C0; --blue-d:#0F4C99; --blue-l:#E8F1FB;
+    --ink:#1A2230; --ink-2:#566074; --line:#E2E6EC; --bg:#F4F6F8; --card:#FFFFFF;
+    --green:#16A34A; --green-l:#E7F6EC; --amber:#D97706; --amber-l:#FBF0DD; --red:#DC2626; --red-l:#FBE9E9;
+    --gray-chip:#EEF1F5; --radius:12px; --shadow:0 1px 2px rgba(20,30,50,.06),0 4px 14px rgba(20,30,50,.05);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+       color:var(--ink);background:var(--bg);line-height:1.45;-webkit-font-smoothing:antialiased}
+  h1,h2,h3,h4{margin:0;font-weight:650;letter-spacing:-.01em}
+  .muted{color:var(--ink-2)}
+  /* ---------- top bar ---------- */
+  .topbar{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
+  .topbar-in{max-width:1180px;margin:0 auto;padding:12px 24px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px}
+  .brand .dot{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,var(--blue),#3B86E0);
+       display:grid;place-items:center;color:#fff;font-size:14px}
+  .poc-pill{font-size:11px;font-weight:700;letter-spacing:.04em;color:var(--blue-d);background:var(--blue-l);
+       border:1px solid #CFE2F8;padding:3px 8px;border-radius:999px;text-transform:uppercase}
+  .site-pick{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink-2);
+       background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:7px 11px}
+  .site-pick b{color:var(--ink)}
+  /* ---------- tabs ---------- */
+  .tabs{max-width:1180px;margin:0 auto;padding:0 24px;display:flex;gap:4px}
+  .tab{appearance:none;border:0;background:none;font:inherit;cursor:pointer;padding:13px 16px 11px;
+       color:var(--ink-2);font-weight:600;font-size:14px;border-bottom:2.5px solid transparent;display:flex;gap:8px;align-items:center}
+  .tab .ic{font-size:15px}
+  .tab[aria-selected="true"]{color:var(--blue);border-bottom-color:var(--blue)}
+  .tab:hover{color:var(--ink)}
+  /* ---------- layout ---------- */
+  .wrap{max-width:1180px;margin:0 auto;padding:26px 24px 80px}
+  .panel{display:none}
+  .panel.active{display:block;animation:fade .2s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .note{background:#FFFDF5;border:1px dashed #E4C97E;border-radius:10px;padding:10px 14px;font-size:13px;
+       color:#7A5B12;margin-bottom:22px;display:flex;gap:9px}
+  .note b{color:#5C440C}
+  .head-row{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:18px;flex-wrap:wrap}
+  .head-row h2{font-size:21px}
+  .head-row .sub{font-size:13px;color:var(--ink-2);margin-top:3px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+  .pad{padding:18px}
+  .btn{appearance:none;border:1px solid var(--blue);background:var(--blue);color:#fff;font:inherit;font-weight:600;
+       font-size:13px;padding:9px 15px;border-radius:9px;cursor:pointer;display:inline-flex;gap:7px;align-items:center}
+  .btn:hover{background:var(--blue-d)}
+  .btn.ghost{background:#fff;color:var(--blue);border-color:#CFE2F8}
+  .btn.ghost:hover{background:var(--blue-l)}
+  .btn.sm{padding:6px 11px;font-size:12px}
+  .btn.subtle{background:#fff;color:var(--ink-2);border-color:var(--line)}
+  .btn.subtle:hover{border-color:#C4CBD6;color:var(--ink)}
+  /* chips / pills */
+  .chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px;
+       background:var(--gray-chip);color:var(--ink-2)}
+  .chip.blue{background:var(--blue-l);color:var(--blue-d)}
+  .pill{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:999px}
+  .pill.done{background:var(--green-l);color:var(--green)}
+  .pill.pend{background:var(--amber-l);color:var(--amber)}
+  .pill.flag{background:var(--red-l);color:var(--red)}
+  .pill.gate{background:#EEE9FB;color:#6B46C1}
+  /* type icon */
+  .tic{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;font-size:16px;flex:none}
+  .t-form{background:#E8F1FB;color:#1564C0}.t-task{background:#E7F6EC;color:#16A34A}
+  .t-asset{background:#FBF0DD;color:#D97706}.t-train{background:#EEE9FB;color:#6B46C1}
+  .t-folder{background:#FBE9E9;color:#DC2626}.t-access{background:#E0F2F1;color:#0E7C7B}
+  /* requirement rows */
+  .req{display:flex;align-items:center;gap:14px;padding:14px 16px;border-top:1px solid var(--line)}
+  .req:first-child{border-top:0}
+  .req .meta{flex:1;min-width:0}
+  .req .meta .nm{font-weight:600;font-size:14px}
+  .req .meta .lk{font-size:12px;color:var(--ink-2);margin-top:2px}
+  .req .meta .lk a{color:var(--blue);text-decoration:none}
+  .req-col{display:flex;flex-direction:column;gap:3px;min-width:120px}
+  .req-col .lbl{font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;color:#9AA3B2;font-weight:700}
+  .req-col .val{font-size:13px;font-weight:600}
+  .req .drag{color:#C4CBD6;cursor:grab;font-size:15px}
+  /* setup builder */
+  .builder{border:1.5px dashed #BBD3F0;background:#FAFCFF;border-radius:12px;padding:18px;margin-top:14px}
+  .step{display:flex;gap:12px;align-items:flex-start;margin-bottom:14px}
+  .step .n{width:22px;height:22px;border-radius:999px;background:var(--blue);color:#fff;font-size:12px;font-weight:700;
+       display:grid;place-items:center;flex:none;margin-top:1px}
+  .step .body{flex:1}
+  .step .body .q{font-weight:600;font-size:13.5px;margin-bottom:8px}
+  .opts{display:flex;gap:8px;flex-wrap:wrap}
+  .opt{font-size:12.5px;font-weight:600;padding:7px 12px;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--ink-2);cursor:pointer}
+  .opt.sel{border-color:var(--blue);background:var(--blue-l);color:var(--blue-d)}
+  .field{width:100%;border:1px solid var(--line);border-radius:8px;padding:9px 11px;font:inherit;font-size:13px;color:var(--ink);background:#fff}
+  /* entry methods (low-key checkboxes) */
+  .entry-row{display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding:14px 18px}
+  .entry-row-h{display:flex;flex-direction:column;gap:1px;margin-right:6px}
+  .checks{display:flex;gap:18px;flex-wrap:wrap;margin-left:auto}
+  .check{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--ink-2);cursor:pointer}
+  .check.on{color:var(--ink)}
+  .check input{width:16px;height:16px;accent-color:var(--blue);cursor:pointer}
+  /* drawer / side panel */
+  .scrim{position:fixed;inset:0;background:rgba(20,30,50,.34);opacity:0;pointer-events:none;transition:opacity .2s;z-index:40}
+  .scrim.open{opacity:1;pointer-events:auto}
+  .drawer{position:fixed;top:0;right:0;height:100%;width:430px;max-width:92vw;background:#fff;z-index:50;
+       box-shadow:-12px 0 40px rgba(15,25,45,.16);transform:translateX(100%);transition:transform .26s cubic-bezier(.4,0,.2,1);
+       display:flex;flex-direction:column}
+  .drawer.open{transform:none}
+  .drawer-h{padding:18px 20px;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+  .drawer-h h3{font-size:16px}
+  .drawer-h .x{appearance:none;border:0;background:none;font-size:20px;color:var(--ink-2);cursor:pointer;line-height:1}
+  .drawer-b{padding:18px 20px;overflow:auto;flex:1}
+  .drawer-f{padding:14px 20px;border-top:1px solid var(--line);display:flex;gap:9px;background:#fff}
+  /* oversight */
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+  .kpi{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px;box-shadow:var(--shadow)}
+  .kpi .v{font-size:28px;font-weight:700;letter-spacing:-.02em}
+  .kpi .k{font-size:12.5px;color:var(--ink-2);margin-top:2px}
+  .kpi .trend{font-size:11.5px;font-weight:700;margin-top:7px}
+  .grid-2{display:grid;grid-template-columns:1.4fr 1fr;gap:18px;align-items:start}
+  .sec-h{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--line)}
+  .sec-h h3{font-size:14px}
+  .person{display:flex;align-items:center;gap:12px;padding:12px 16px;border-top:1px solid var(--line)}
+  .person:first-child{border-top:0}
+  .av{width:34px;height:34px;border-radius:999px;background:#D9E2EC;color:#51607A;display:grid;place-items:center;font-size:12.5px;font-weight:700;flex:none}
+  .person .pn{flex:1;min-width:0}
+  .person .pn .nm{font-weight:600;font-size:13.5px}
+  .person .pn .sm{font-size:11.5px;color:var(--ink-2)}
+  .bar{height:7px;border-radius:999px;background:#EDF0F4;width:96px;overflow:hidden;flex:none}
+  .bar > i{display:block;height:100%;border-radius:999px;background:var(--green)}
+  .bar.part > i{background:var(--amber)}
+  .progtxt{font-size:12px;font-weight:600;width:34px;text-align:right;flex:none}
+  .reqstat{display:flex;align-items:center;gap:12px;padding:12px 16px;border-top:1px solid var(--line)}
+  .reqstat:first-child{border-top:0}
+  .reqstat .rn{flex:1;font-size:13px;font-weight:600}
+  .reqstat .frac{font-size:12px;color:var(--ink-2);width:54px;text-align:right}
+  .barwide{height:8px;border-radius:999px;background:#EDF0F4;flex:1;max-width:180px;overflow:hidden}
+  .barwide > i{display:block;height:100%;background:var(--green)}
+  .flagrow{display:flex;align-items:center;gap:12px;padding:12px 16px;border-top:1px solid var(--line)}
+  .flagrow:first-child{border-top:0}
+  /* field / mobile */
+  .phone-stage{display:flex;gap:34px;justify-content:center;flex-wrap:wrap;align-items:flex-start}
+  .phone{width:330px;flex:none}
+  .phone .label{text-align:center;font-size:12.5px;font-weight:700;color:var(--ink-2);margin-bottom:10px}
+  .device{border:9px solid #11151C;border-radius:40px;background:#fff;overflow:hidden;box-shadow:0 18px 40px rgba(15,25,45,.18);height:660px;display:flex;flex-direction:column}
+  .notch{height:26px;background:#11151C;border-bottom-left-radius:14px;border-bottom-right-radius:14px;width:140px;margin:0 auto;flex:none}
+  .scr{flex:1;overflow:hidden;display:flex;flex-direction:column;background:var(--bg)}
+  .m-top{background:var(--blue);color:#fff;padding:16px 16px 14px}
+  .m-top .loc{font-size:11px;opacity:.85;font-weight:600}
+  .m-top .ttl{font-size:17px;font-weight:700;margin-top:2px}
+  .m-top .sub{font-size:12px;opacity:.9;margin-top:5px;display:flex;align-items:center;gap:6px}
+  .m-body{padding:14px;overflow:auto;flex:1}
+  .m-body::-webkit-scrollbar{width:0}
+  .scan{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px 22px;gap:10px}
+  .scan .ring{width:148px;height:148px;border-radius:24px;border:3px dashed var(--blue);display:grid;place-items:center;font-size:54px;color:var(--blue);background:var(--blue-l)}
+  .scan h3{font-size:18px;margin-top:6px}
+  .scan p{font-size:13px;color:var(--ink-2);margin:0}
+  .entrymini{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;justify-content:center}
+  .entrymini span{font-size:11px;font-weight:600;background:#fff;border:1px solid var(--line);border-radius:999px;padding:5px 10px;color:var(--ink-2)}
+  .todo{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;gap:11px;align-items:center;margin-bottom:10px}
+  .todo .box{width:24px;height:24px;border-radius:7px;border:2px solid #C4CBD6;flex:none;display:grid;place-items:center;font-size:13px;color:#fff}
+  .todo.done .box{background:var(--green);border-color:var(--green)}
+  .todo .tt{flex:1;min-width:0}
+  .todo .tt .n{font-size:13.5px;font-weight:600}
+  .todo.done .tt .n{color:var(--ink-2);text-decoration:line-through}
+  .todo .tt .s{font-size:11.5px;color:var(--ink-2);margin-top:1px}
+  .todo .arr{color:#C4CBD6;font-size:16px}
+  .gatecard{background:var(--red-l);border:1px solid #F3C9C9;border-radius:12px;padding:13px;margin-bottom:12px;display:flex;gap:10px}
+  .gatecard .gi{font-size:18px}
+  .gatecard .gt{font-size:12.5px;color:#9B2C2C}
+  .gatecard .gt b{color:#7A1F1F}
+  .m-prog{background:#fff;border-bottom:1px solid var(--line);padding:11px 16px;display:flex;align-items:center;gap:10px;flex:none}
+  .m-prog .bar{flex:1;max-width:none;width:auto}
+  .m-prog .pt{font-size:12px;font-weight:700}
+  .done-state{text-align:center;padding:40px 22px}
+  .done-state .big{width:84px;height:84px;border-radius:999px;background:var(--green-l);color:var(--green);display:grid;place-items:center;font-size:42px;margin:0 auto 14px}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:26px;justify-content:center;font-size:12px;color:var(--ink-2)}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .sw{width:11px;height:11px;border-radius:3px;display:inline-block}
+  .footer{max-width:1180px;margin:0 auto;padding:0 24px;color:#9AA3B2;font-size:12px}
+  @media(max-width:720px){.kpis,.entry-grid{grid-template-columns:repeat(2,1fr)}.grid-2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-in">
+    <div class="brand"><span class="dot">▥</span> Site Management <span class="poc-pill">Rough POC</span></div>
+    <div class="site-pick">📍 Active site: <b>North Yard — Plant 4</b> ▾</div>
+  </div>
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" aria-selected="true" data-t="setup"><span class="ic">🛠️</span> Admin · Site Setup</button>
+    <button class="tab" role="tab" aria-selected="false" data-t="oversight"><span class="ic">📊</span> Admin · Oversight</button>
+    <button class="tab" role="tab" aria-selected="false" data-t="field"><span class="ic">📱</span> Field User</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- ============ SETUP ============ -->
+  <section class="panel active" data-p="setup">
+    <div class="note">💡 <div><b>Concept:</b> one place to define a site once — link to forms, tasks, assets, training & folders that already exist, set when they're due and who they're for. This replaces wiring each module up separately. Manual builder shown (AI-assisted setup is a later phase).</div></div>
+
+    <div class="head-row">
+      <div>
+        <h2>North Yard — Plant 4</h2>
+        <div class="sub">Linked to Location: <b>North Yard</b> · 4 supervisors · 38 field users assigned</div>
+      </div>
+      <button class="btn" id="addReq">＋ Add requirement</button>
+    </div>
+
+    <!-- entry methods (low-key) -->
+    <div class="card pad entry-row" style="margin-bottom:18px">
+      <div class="entry-row-h">
+        <h3 style="font-size:13.5px">How people enter this site</h3>
+        <span class="muted" style="font-size:12px">Pick any combination — entering reveals that person's requirements.</span>
+      </div>
+      <div class="checks">
+        <label class="check on"><input type="checkbox" checked /> <span>📷 QR code scan</span></label>
+        <label class="check on"><input type="checkbox" checked /> <span>🪪 ID badge scan</span></label>
+        <label class="check"><input type="checkbox" /> <span>📍 Geolocation</span></label>
+        <label class="check on"><input type="checkbox" checked /> <span>➕ Admin adds user</span></label>
+      </div>
+    </div>
+
+    <!-- requirements list -->
+    <div class="card">
+      <div class="sec-h"><h3>Requirements <span class="muted" style="font-weight:500">· 5</span></h3><span class="chip">Reorder · what shows first to the worker</span></div>
+
+      <div class="req">
+        <span class="drag">⋮⋮</span>
+        <div class="tic t-access">🪪</div>
+        <div class="meta"><div class="nm">Site Access compliance <span class="pill gate">Gate to enter</span></div>
+          <div class="lk">Linked to <a href="#">Site Access → North Yard ruleset</a></div></div>
+        <div class="req-col"><span class="lbl">Frequency</span><span class="val">On entry</span></div>
+        <div class="req-col"><span class="lbl">Assigned to</span><span class="val">Everyone</span></div>
+        <button class="btn subtle sm">Edit</button>
+      </div>
+
+      <div class="req">
+        <span class="drag">⋮⋮</span>
+        <div class="tic t-form">📝</div>
+        <div class="meta"><div class="nm">Daily FLHA</div>
+          <div class="lk">Linked to <a href="#">Form → Field Level Hazard Assessment</a></div></div>
+        <div class="req-col"><span class="lbl">Frequency</span><span class="val">Daily · AM</span></div>
+        <div class="req-col"><span class="lbl">Assigned to</span><span class="val">All <span class="muted">(except Visitors)</span></span></div>
+        <button class="btn subtle sm">Edit</button>
+      </div>
+
+      <div class="req">
+        <span class="drag">⋮⋮</span>
+        <div class="tic t-folder">📑</div>
+        <div class="meta"><div class="nm">Toolbox Talk sign-off</div>
+          <div class="lk">Linked to <a href="#">Folder → Weekly Safety Bulletins</a></div></div>
+        <div class="req-col"><span class="lbl">Frequency</span><span class="val">Weekly · Mon</span></div>
+        <div class="req-col"><span class="lbl">Assigned to</span><span class="val">Everyone</span></div>
+        <button class="btn subtle sm">Edit</button>
+      </div>
+
+      <div class="req">
+        <span class="drag">⋮⋮</span>
+        <div class="tic t-asset">🚜</div>
+        <div class="meta"><div class="nm">Equipment pre-use inspection</div>
+          <div class="lk">Linked to <a href="#">Asset → assigned equipment</a> · on-demand form</div></div>
+        <div class="req-col"><span class="lbl">Frequency</span><span class="val">Per use</span></div>
+        <div class="req-col"><span class="lbl">Assigned to</span><span class="val">Operators</span></div>
+        <button class="btn subtle sm">Edit</button>
+      </div>
+
+      <div class="req">
+        <span class="drag">⋮⋮</span>
+        <div class="tic t-form">📝</div>
+        <div class="meta"><div class="nm">End-of-day sign-out worksheet</div>
+          <div class="lk">Linked to <a href="#">Form → Site Sign-out</a></div></div>
+        <div class="req-col"><span class="lbl">Frequency</span><span class="val">Fridays · EOD</span></div>
+        <div class="req-col"><span class="lbl">Assigned to</span><span class="val">Everyone</span></div>
+        <button class="btn subtle sm">Edit</button>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ============ OVERSIGHT ============ -->
+  <section class="panel" data-p="oversight">
+    <div class="note">💡 <div><b>Concept:</b> the live "what's happening today / this week" picture, plus one-click actions on gaps — so a manager can trust the right safety work is getting done without checking each module.</div></div>
+
+    <div class="head-row">
+      <div><h2>Today at North Yard — Plant 4</h2><div class="sub">Friday, June 19 · updated 2 min ago</div></div>
+      <div style="display:flex;gap:9px"><button class="btn ghost">This week ▾</button><button class="btn">Export EOD report</button></div>
+    </div>
+
+    <div class="kpis">
+      <div class="kpi"><div class="v">31<span class="muted" style="font-size:16px">/38</span></div><div class="k">On site today</div><div class="trend" style="color:var(--ink-2)">7 not yet entered</div></div>
+      <div class="kpi"><div class="v" style="color:var(--green)">82%</div><div class="k">Requirements complete</div><div class="trend" style="color:var(--green)">▲ on pace</div></div>
+      <div class="kpi"><div class="v" style="color:var(--red)">6</div><div class="k">Flagged · incomplete</div><div class="trend" style="color:var(--red)">needs action</div></div>
+      <div class="kpi"><div class="v" style="color:var(--amber)">2</div><div class="k">Hazards reported</div><div class="trend" style="color:var(--amber)">from today's FLHAs</div></div>
+    </div>
+
+    <div class="grid-2">
+      <!-- who's on site -->
+      <div class="card">
+        <div class="sec-h"><h3>Who's on site</h3><span class="chip">Live · by entry time</span></div>
+        <div class="person"><div class="av">DR</div><div class="pn"><div class="nm">Dustin Reyes</div><div class="sm">Operator · in since 6:42 AM</div></div>
+          <div class="bar"><i style="width:100%"></i></div><span class="progtxt">4/4</span><span class="pill done">✓</span></div>
+        <div class="person"><div class="av">MK</div><div class="pn"><div class="nm">Maya Knowles</div><div class="sm">Supervisor · in since 6:55 AM</div></div>
+          <div class="bar"><i style="width:100%"></i></div><span class="progtxt">3/3</span><span class="pill done">✓</span></div>
+        <div class="person"><div class="av">TO</div><div class="pn"><div class="nm">Theo Okafor</div><div class="sm">Operator · in since 7:10 AM</div></div>
+          <div class="bar part"><i style="width:50%"></i></div><span class="progtxt">2/4</span><span class="pill pend">FLHA due</span></div>
+        <div class="person"><div class="av">SP</div><div class="pn"><div class="nm">Sara Pulanco</div><div class="sm">Laborer · in since 7:18 AM</div></div>
+          <div class="bar part"><i style="width:33%"></i></div><span class="progtxt">1/3</span><span class="pill flag">No FLHA</span></div>
+        <div class="person"><div class="av">JD</div><div class="pn"><div class="nm">Jordan Diaz</div><div class="sm">Visitor · in since 8:02 AM</div></div>
+          <div class="bar"><i style="width:100%"></i></div><span class="progtxt">1/1</span><span class="pill done">✓</span></div>
+      </div>
+
+      <!-- right column -->
+      <div style="display:flex;flex-direction:column;gap:18px">
+        <div class="card">
+          <div class="sec-h"><h3>Completion by requirement</h3></div>
+          <div class="reqstat"><div class="rn">Site Access</div><div class="barwide"><i style="width:100%"></i></div><div class="frac">31/31</div></div>
+          <div class="reqstat"><div class="rn">Daily FLHA</div><div class="barwide"><i style="width:81%;background:var(--amber)"></i></div><div class="frac">25/31</div></div>
+          <div class="reqstat"><div class="rn">Toolbox sign-off</div><div class="barwide"><i style="width:100%"></i></div><div class="frac">31/31</div></div>
+          <div class="reqstat"><div class="rn">EOD sign-out</div><div class="barwide"><i style="width:0%"></i></div><div class="frac">0/31</div></div>
+        </div>
+
+        <div class="card">
+          <div class="sec-h"><h3 style="color:var(--red)">⚑ Needs action</h3><span class="chip">6 people</span></div>
+          <div class="flagrow"><div class="av">SP</div><div class="pn" style="flex:1"><div class="nm" style="font-size:13.5px;font-weight:600">Sara Pulanco</div><div class="sm" style="font-size:11.5px;color:var(--ink-2)">No FLHA · on site 1h 20m</div></div>
+            <button class="btn sm">Nudge</button><button class="btn subtle sm">⋯</button></div>
+          <div class="flagrow"><div class="av">TO</div><div class="pn" style="flex:1"><div class="nm" style="font-size:13.5px;font-weight:600">Theo Okafor</div><div class="sm" style="font-size:11.5px;color:var(--ink-2)">FLHA overdue</div></div>
+            <button class="btn sm">Nudge</button><button class="btn subtle sm">⋯</button></div>
+          <div class="flagrow" style="justify-content:space-between"><span class="muted" style="font-size:12.5px">+ 4 more flagged</span>
+            <button class="btn ghost sm">Nudge all 6 →</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- mobile supervisor view -->
+    <div class="head-row" style="margin-top:34px;margin-bottom:10px">
+      <div><h2 style="font-size:17px">Same view, on a phone</h2>
+        <div class="sub">Site supervisors are often out on the floor — they get the live picture and can nudge from their pocket.</div></div>
+    </div>
+    <div class="phone-stage" style="justify-content:flex-start">
+      <div class="phone">
+        <div class="label">Supervisor · mobile</div>
+        <div class="device"><div class="notch"></div><div class="scr">
+          <div class="m-top"><div class="loc">📍 NORTH YARD — PLANT 4</div><div class="ttl">Today</div>
+            <div class="sub">Fri Jun 19 · 31 of 38 on site</div></div>
+          <div class="m-body">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:12px">
+              <div class="card pad" style="padding:11px"><div style="font-size:22px;font-weight:700;color:var(--green)">82%</div><div class="muted" style="font-size:11px">Complete</div></div>
+              <div class="card pad" style="padding:11px"><div style="font-size:22px;font-weight:700;color:var(--red)">6</div><div class="muted" style="font-size:11px">Flagged</div></div>
+            </div>
+            <div class="card" style="margin-bottom:12px">
+              <div class="sec-h" style="padding:11px 13px"><h3 style="font-size:12.5px;color:var(--red)">⚑ Needs action</h3><span class="chip" style="font-size:10.5px;padding:2px 7px">6</span></div>
+              <div class="flagrow" style="padding:10px 13px"><div class="av" style="width:30px;height:30px;font-size:11px">SP</div>
+                <div class="pn" style="flex:1"><div class="nm" style="font-size:12.5px;font-weight:600">Sara Pulanco</div><div class="sm" style="font-size:11px;color:var(--ink-2)">No FLHA · 1h 20m</div></div>
+                <button class="btn sm" style="padding:5px 10px">Nudge</button></div>
+              <div class="flagrow" style="padding:10px 13px"><div class="av" style="width:30px;height:30px;font-size:11px">TO</div>
+                <div class="pn" style="flex:1"><div class="nm" style="font-size:12.5px;font-weight:600">Theo Okafor</div><div class="sm" style="font-size:11px;color:var(--ink-2)">FLHA overdue</div></div>
+                <button class="btn sm" style="padding:5px 10px">Nudge</button></div>
+              <div style="padding:10px 13px"><button class="btn ghost sm" style="width:100%;justify-content:center">Nudge all 6 →</button></div>
+            </div>
+            <div class="card">
+              <div class="sec-h" style="padding:11px 13px"><h3 style="font-size:12.5px">On site now</h3></div>
+              <div class="person" style="padding:10px 13px"><div class="av" style="width:30px;height:30px;font-size:11px">DR</div><div class="pn"><div class="nm" style="font-size:12.5px">Dustin Reyes</div></div><span class="pill done">4/4</span></div>
+              <div class="person" style="padding:10px 13px"><div class="av" style="width:30px;height:30px;font-size:11px">TO</div><div class="pn"><div class="nm" style="font-size:12.5px">Theo Okafor</div></div><span class="pill pend">2/4</span></div>
+              <div class="person" style="padding:10px 13px"><div class="av" style="width:30px;height:30px;font-size:11px">SP</div><div class="pn"><div class="nm" style="font-size:12.5px">Sara Pulanco</div></div><span class="pill flag">1/3</span></div>
+            </div>
+          </div>
+        </div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FIELD ============ -->
+  <section class="panel" data-p="field">
+    <div class="note">💡 <div><b>Concept:</b> the worker doesn't think about modules — they enter the site and see exactly what they need to do <b>here, now</b>. Three states shown left → right: arrive, do the work, done.</div></div>
+
+    <div class="phone-stage">
+
+      <!-- 1. arrive / scan -->
+      <div class="phone">
+        <div class="label">1 · Arrive at site</div>
+        <div class="device"><div class="notch"></div><div class="scr">
+          <div class="scan">
+            <div class="ring">▦</div>
+            <h3>Scan to enter</h3>
+            <p>Point at the gate QR, tap your badge, or your supervisor can add you.</p>
+            <div class="entrymini"><span>📷 QR</span><span>🪪 Badge</span><span>📍 Location</span></div>
+            <button class="btn" style="margin-top:14px;width:100%;justify-content:center">Scan in</button>
+          </div>
+        </div></div>
+      </div>
+
+      <!-- 2. to-dos -->
+      <div class="phone">
+        <div class="label">2 · Your to-dos here</div>
+        <div class="device"><div class="notch"></div><div class="scr">
+          <div class="m-top">
+            <div class="loc">📍 NORTH YARD — PLANT 4</div>
+            <div class="ttl">Welcome, Sara 👋</div>
+            <div class="sub">✓ Checked in 7:18 AM · here's what's due today</div>
+          </div>
+          <div class="m-prog"><span class="pt">1 of 3</span><div class="bar part"><i style="width:33%"></i></div><span class="muted" style="font-size:11px">2 left</span></div>
+          <div class="m-body">
+            <div class="gatecard"><span class="gi">🔒</span><div class="gt"><b>Site Access cleared.</b> You're compliant to be on this site today.</div></div>
+            <div class="todo done"><div class="box">✓</div><div class="tt"><div class="n">Site Access check</div><div class="s">Done on entry</div></div></div>
+            <div class="todo"><div class="box"></div><div class="tt"><div class="n">Daily FLHA</div><div class="s">📝 Form · due this morning</div></div><span class="arr">›</span></div>
+            <div class="todo"><div class="box"></div><div class="tt"><div class="n">Toolbox Talk sign-off</div><div class="s">📑 Read + sign · this week's bulletin</div></div><span class="arr">›</span></div>
+            <p class="muted" style="font-size:11.5px;text-align:center;margin-top:14px">EOD sign-out unlocks at 3:00 PM</p>
+          </div>
+        </div></div>
+      </div>
+
+      <!-- 3. done -->
+      <div class="phone">
+        <div class="label">3 · All clear</div>
+        <div class="device"><div class="notch"></div><div class="scr">
+          <div class="m-top"><div class="loc">📍 NORTH YARD — PLANT 4</div><div class="ttl">You're all set</div>
+            <div class="sub">All required items complete for today</div></div>
+          <div class="m-body">
+            <div class="done-state" style="padding-top:24px">
+              <div class="big">✓</div>
+              <h3 style="font-size:17px">Nice work, Sara</h3>
+              <p class="muted" style="font-size:13px;margin-top:6px">3 of 3 done. Your supervisor sees you're compliant.</p>
+            </div>
+            <div class="todo done"><div class="box">✓</div><div class="tt"><div class="n">Site Access check</div><div class="s">7:18 AM</div></div></div>
+            <div class="todo done"><div class="box">✓</div><div class="tt"><div class="n">Daily FLHA</div><div class="s">7:24 AM · 1 hazard reported</div></div></div>
+            <div class="todo done"><div class="box">✓</div><div class="tt"><div class="n">Toolbox Talk sign-off</div><div class="s">7:26 AM</div></div></div>
+            <button class="btn ghost" style="width:100%;justify-content:center;margin-top:6px">Report a hazard</button>
+          </div>
+        </div></div>
+      </div>
+
+    </div>
+
+    <div class="legend">
+      <span><i class="sw" style="background:var(--green)"></i> Complete</span>
+      <span><i class="sw" style="background:var(--amber)"></i> Due / in progress</span>
+      <span><i class="sw" style="background:var(--red)"></i> Flagged to admin</span>
+      <span><i class="sw" style="background:#6B46C1"></i> Gate — must clear to enter</span>
+    </div>
+  </section>
+
+</div>
+
+<div class="footer">Site Management · rough concept POC for client feedback · not final UI · built from the Site Management FigJam (May 1 – June 3 sessions)</div>
+
+<!-- ===== Add requirement drawer ===== -->
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-hidden="true">
+  <div class="drawer-h">
+    <div><h3>Add requirement</h3><div class="muted" style="font-size:12.5px;margin-top:2px">Link something that already exists — no rebuilding.</div></div>
+    <button class="x" id="drawerX" aria-label="Close">✕</button>
+  </div>
+  <div class="drawer-b">
+    <div class="step"><div class="n">1</div><div class="body">
+      <div class="q">What kind of requirement?</div>
+      <div class="opts">
+        <span class="opt sel">📝 Form</span><span class="opt">✅ Task</span><span class="opt">🚜 Asset</span>
+        <span class="opt">🎓 Training</span><span class="opt">📑 Folder</span><span class="opt">🪪 Site Access</span>
+      </div></div></div>
+    <div class="step"><div class="n">2</div><div class="body">
+      <div class="q">Link the existing item</div>
+      <input class="field" placeholder="🔍 Search Forms…" value="Field Level Hazard Assessment" /></div></div>
+    <div class="step"><div class="n">3</div><div class="body">
+      <div class="q">How often is it due?</div>
+      <div class="opts"><span class="opt">On entry</span><span class="opt sel">Daily</span><span class="opt">Weekly</span><span class="opt">Per use</span><span class="opt">EOD</span><span class="opt">Custom…</span></div></div></div>
+    <div class="step"><div class="n">4</div><div class="body">
+      <div class="q">Who is it for?</div>
+      <div class="opts"><span class="opt sel">Everyone on site</span><span class="opt">Everyone except…</span><span class="opt">A sub-group / role</span></div></div></div>
+    <div class="step"><div class="n">5</div><div class="body">
+      <div class="q">Block entry until complete?</div>
+      <div class="opts"><span class="opt">Yes — gate</span><span class="opt sel">No — just track it</span></div></div></div>
+  </div>
+  <div class="drawer-f"><button class="btn" id="drawerSave">Add requirement</button><button class="btn subtle" id="drawerCancel">Cancel</button></div>
+</aside>
+
+<script>
+  const tabs=document.querySelectorAll('.tab');
+  const panels=document.querySelectorAll('.panel');
+  tabs.forEach(t=>t.addEventListener('click',()=>{
+    tabs.forEach(x=>x.setAttribute('aria-selected',x===t));
+    panels.forEach(p=>p.classList.toggle('active',p.dataset.p===t.dataset.t));
+    window.scrollTo({top:0,behavior:'smooth'});
+  }));
+  // light interactivity: toggle setup option chips within a step
+  document.querySelectorAll('.opts').forEach(group=>{
+    group.querySelectorAll('.opt').forEach(o=>o.addEventListener('click',()=>{
+      group.querySelectorAll('.opt').forEach(x=>x.classList.remove('sel'));o.classList.add('sel');
+    }));
+  });
+  // entry method checkboxes
+  document.querySelectorAll('.check input').forEach(cb=>cb.addEventListener('change',()=>{
+    cb.closest('.check').classList.toggle('on',cb.checked);
+  }));
+  // add-requirement drawer
+  const drawer=document.getElementById('drawer'),scrim=document.getElementById('scrim');
+  const openD=()=>{drawer.classList.add('open');scrim.classList.add('open');drawer.setAttribute('aria-hidden','false');};
+  const closeD=()=>{drawer.classList.remove('open');scrim.classList.remove('open');drawer.setAttribute('aria-hidden','true');};
+  document.getElementById('addReq').addEventListener('click',openD);
+  ['drawerX','drawerCancel','drawerSave'].forEach(id=>document.getElementById(id).addEventListener('click',closeD));
+  scrim.addEventListener('click',closeD);
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeD();});
+</script>
+</body>
+</html>
