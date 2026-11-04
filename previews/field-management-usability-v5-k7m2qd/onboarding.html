@@ -195,6 +195,7 @@ main{max-width:1320px;margin:0 auto;padding:16px 24px 90px}
 .phone.small{width:250px}
 .pnode.drag{opacity:.4}
 .selbox{margin:0;opacity:.35}.node:hover .selbox,.selbox:checked{opacity:1}
+.opts{display:flex;flex-direction:column;gap:8px}.opt{display:flex;align-items:center;gap:12px;text-align:left;width:100%;border:1px solid #DFDFE2;background:#fff;border-radius:8px;padding:10px 14px;font:inherit;color:inherit;cursor:pointer}.opt:hover{border-color:#009ACB}.opt.on{border-color:#009ACB;background:#F0F9FE;box-shadow:inset 3px 0 0 #0078B3}.opt small{display:block;color:#6b6b73;font-size:12px;margin-top:2px}.opt>i{color:#0078B3;font-size:18px}
 </style>
 </head>
 <body>
@@ -425,7 +426,7 @@ function navHtml(){ const items=['Home','Profile','Store','Rewards','Purchases',
  const cur=S.route==='home'?'Home':'Field';
  const fieldGo=S.finished?"fm('overview')":S.started?"go(S.route==='home'||S.route==='fm'?'intro':S.route)":"go('intro')";
  return items.map(i=>`<a class="${i===cur?'on':''}" id="nav-${i}" onclick="${i==='Field'?fieldGo:i==='Home'?"go('home')":''}">${i}${i==='Field'&&!S.started?'<span class="new">New</span>':''}</a>`).join(''); }
-const STEPS=[['intro','Welcome'],['words','Your words'],['structure','Bring it over'],['routine','First routine']];
+const STEPS=[['intro','Welcome'],['about','About you'],['need','What you need'],['words','Your words'],['structure','Bring it over'],['routine','First routine']];
 function stepsHtml(){ const i=STEPS.findIndex(s=>s[0]===S.route);
  return `<div class="steps">${STEPS.map((s,k)=>`<span class="step ${k===i?'on':''} ${k<i?'done':''}"><i>${k<i?'✓':k+1}</i>${s[1]}</span>`).join('')}</div>`; }
 function foot(html){ const f=$('#foot'); if(!html){f.classList.add('hide');return;} f.classList.remove('hide'); $('#footIn').innerHTML=html; }
@@ -458,7 +459,7 @@ function placeNavTip(){ const t=$('#navTip'),a=$('#nav-Field'); if(!t||!a) retur
 
 /* ============ Setup ============ */
 function intro(){
- foot(`<button class="btn ghost" onclick="go('words')">Skip intro</button><span style="flex:1"></span><button class="btn" onclick="go('words')">Let's go →</button>`);
+ foot(`<button class="btn ghost" onclick="go('about')">Skip intro</button><span style="flex:1"></span><button class="btn" onclick="go('about')">Let's go →</button>`);
  if(C.peopleOnly) return setupHead()+`<div class="card"><h2>Field Management in one picture</h2>
  <p class="mut" style="margin:0">For you, it answers one question: who is trained and allowed on site today? Nothing in your portal is moved or deleted.</p>
  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0">${[['industry','Your site and areas','Where people need to be allowed in'],['handshake','Contractor companies','Each company and its people'],['id-card','Allowed in today','Checked every day against their training and tickets']].map(([i,a,b],n)=>`<div class="card" style="text-align:center"><div style="font-size:26px;color:#0078B3"><i class="fa-solid fa-${i}"></i></div><b>${a}</b><div class="sm mut">${b}</div></div>`).join('')}</div>
@@ -674,9 +675,35 @@ function dDrop(e){ e.preventDefault(); if(S.dragI===null||!S.drop) return; const
  const err=buildOk(S.build); const di=S.dragI; if(err){ S.build=keep; dEnd(); setFlash(di,shortErr(err)); } else { S.flash=''; dEnd(); } }
 
 /* --- Your words --- */
+/* --- About you + What you need (from the v4 setup; multi-select) --- */
+const WORKK=[['con','Construction & Built Environment','Builders, trades, roadwork, developers',{site:'Site',job:'Job'}],['nrg','Energy & Resources','Oil and gas, mining, forestry, power',{site:'Yard',job:'Work order'}],['ind','Industrial & Manufacturing','Plants, shops, fabrication, processing',{site:'Site',job:'Work order'}],['trn','Transportation & Logistics','Fleets, depots, warehouses, distribution',{site:'Yard',job:'Job'}],['pub','Public Sector & Municipal','Municipalities, utilities, public works',{site:'Station',job:'Work order'}],['svc','Service & Professional','Field techs, maintenance, inspections',{site:'Location',job:'Service call'}],['oth','Something else','Tell us in a few words',null]];
+const ORGS=[['site','Mostly by place','fa-location-dot','Your work happens at places people go to on a regular schedule.'],['job','Mostly by job','fa-briefcase','Your work comes as jobs: some run for weeks, some are many in a day.'],['crew','Mostly by team','fa-helmet-safety','You mainly oversee teams and how they’re doing.']];
+function optBtn(on,body,act,multi){ return `<button class="opt ${on?'on':''}" role="${multi?'checkbox':'radio'}" aria-checked="${on}" onclick="${act}">${body}<i class="${multi?(on?'fa-solid fa-square-check':'fa-regular fa-square'):(on?'fa-solid fa-circle-dot':'fa-regular fa-circle')}"></i></button>`; }
+function pickWork(k){ S.work=k; const w=WORKK.find(x=>x[0]===k); if(w&&w[3]){ S.words.site=w[3].site; S.words.job=w[3].job; } render(); }
+function toggleOrg(k){ S.org=S.org||{}; S.org[k]=!S.org[k]; S.need2=null; render(); }
+function toggleNeed2(k){ S.need2=S.need2||{}; S.need2[k]=!S.need2[k]; render(); }
+function about(){ const O=S.org||{}, any=S.work||Object.values(O).some(Boolean);
+ foot(`<button class="btn sec" onclick="go('intro')">Back</button><span class="saved">Saved</span><span style="flex:1"></span><button class="btn" onclick="go('need')">${any?'Continue':'Skip for now'}</button>`);
+ return setupHead()+`<div class="card"><h2>Tell us a little about your work</h2><p class="mut" style="margin-top:0">Two quick questions, so setup fits how you work.</p>
+ <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start"><div><h3>What kind of work do you do?</h3><div class="opts">${WORKK.map(([k,h,sub])=>optBtn(S.work===k,`<span style="flex:1"><b>${h}</b><small>${sub}</small></span>`,`pickWork('${k}')`)).join('')}</div>${S.work==='oth'?`<input class="sel" style="margin-top:8px;width:100%;padding:7px" placeholder="Your industry, in a few words" value="${S.workOther||''}" oninput="S.workOther=this.value">`:''}</div>
+ <div><h3>How is your work organised? <span class="mut" style="font-weight:400">Pick all that apply.</span></h3><div class="opts">${ORGS.map(([k,h,ic,d])=>optBtn(!!O[k],`<span class="ico" style="width:36px;height:36px;font-size:16px"><i class="fa-solid ${ic}"></i></span><span style="flex:1"><b style="font-size:16px">${h}</b><small>${d}</small></span>`,`toggleOrg('${k}')`,true)).join('')}</div></div></div>
+ <p class="sm mut" style="margin-bottom:0"><i class="fa-solid fa-circle-info"></i> You can always change this after setup.</p></div>`;
+}
+function need(){ if(!S.need2){ const O=S.org||{}; S.need2={site:!!O.site,job:!!O.job,crew:!!O.crew}; }
+ const N=S.need2, any=N.site||N.job||N.crew, fromAbout=Object.values(S.org||{}).some(Boolean);
+ foot(`<button class="btn sec" onclick="go('about')">Back</button><span class="saved">Saved</span><span style="flex:1"></span><button class="btn" ${any?'':'disabled'} onclick="go('words')">Continue</button>`);
+ const card=(k,ic,h,d,eg)=>optBtn(!!N[k],`<span class="ico" style="width:36px;height:36px;font-size:16px"><i class="fa-solid ${ic}"></i></span><span style="flex:1"><b style="font-size:16px">${h}</b><small>${d}</small><small style="margin-top:4px;font-style:italic">${eg}</small></span>`,`toggleNeed2('${k}')`,true);
+ return setupHead()+`<div class="card"><h2>What do you need?</h2><p class="mut" style="margin-top:0">${fromAbout?'Based on your answers, this is what we recommend. Change it if it isn’t right. ':''}<b>Pick all that apply.</b> Only what you pick shows up in the next steps.</p>
+ <div class="opts" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+ ${card('job','fa-briefcase',pl('job'),'A piece of work with a start and an end.','e.g. a work order, a project, a service call')}
+ ${card('crew','fa-helmet-safety',pl('crew'),'A group of people who work together, on your '+pl('job').toLowerCase()+' or at your '+pl('site').toLowerCase()+'.','e.g. a paving crew, a night shift, the service techs')}
+ ${card('site','fa-location-dot',pl('site'),'A place where people work, that keeps going. '+pl('job')+' can sit inside it.','e.g. a yard, a plant, a station, a branch')}</div>
+ <p class="sm mut" style="margin-bottom:0"><i class="fa-solid fa-circle-info"></i> You can add more later, any time.</p></div>`;
+}
 function words(){
- foot(`<button class="btn sec" onclick="go('intro')">Back</button><span class="saved">Saved</span><span style="flex:1"></span><button class="btn" onclick="go('structure')">Continue</button>`);
- const used=['group','site','job','crew'].filter(t=>t==='job'?jobsOn():counts()[t]);
+ foot(`<button class="btn sec" onclick="go('need')">Back</button><span class="saved">Saved</span><span style="flex:1"></span><button class="btn" onclick="go('structure')">Continue</button>`);
+ const N=S.need2||{}, picked=N.site||N.job||N.crew;
+ const used=['group','site','job','crew'].filter(t=>picked?(t==='group'?N.site:N[t]):(t==='job'?jobsOn():counts()[t]));
  return setupHead()+`<div style="display:grid;grid-template-columns:2.2fr 1fr;gap:16px;align-items:start"><div class="card"><h2>What do you call these?</h2>
  <p class="mut" style="margin-top:0">Before we bring anything over, name the parts. Pick a word other companies use, or type your own. Everything after this uses it.</p>
  ${used.map(t=>{ const custom=!IDEAS[t].includes(sg(t)); return `<div class="wordrow"><div class="row" style="justify-content:space-between"><b>${DESC[t]}</b><span class="sm mut">e.g. ${(nodesOf(t)[0]||{name:'—'}).name}</span></div>
@@ -839,7 +866,7 @@ function pick(){ foot(null);
   <button class="btn sm">Test</button>
   ${S.noteOpen?`<div class="sm" style="grid-column:1/-1;background:#fffbe6;border:1px solid #e8d77a;border-radius:4px;padding:4px 8px">Company based on: ${c.based} · Person based on: ${p.based}</div>`:''}</div>`; }).join('')}</div>
  <p class="sm mut" style="margin-top:12px">Open <b>ⓘ Design note</b> to see which real clients each one is based on.</p>`; }
-const SCREENS={pick,home,intro,work,structure,words,routine,fm:fmScreen};
+const SCREENS={pick,home,intro,work,about,need,structure,words,routine,fm:fmScreen};
 function render(){ if(C) TREE=srcTree(S.source);
  $('#nav').innerHTML=navHtml();
  const P=PEOPLE[S.client]; $('#who').innerHTML=S.route==='pick'?'':`<span class="sm mut" title="${P.need}" style="display:flex;gap:6px;align-items:center"><span style="width:24px;height:24px;border-radius:50%;background:${P.col};color:#fff;display:grid;place-items:center;font-size:11px;font-weight:700">${P.av}</span>${P.name} · ${C.label}</span>`;
