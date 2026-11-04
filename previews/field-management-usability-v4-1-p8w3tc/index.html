@@ -1,39 +1,4 @@
 <!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Field Management · Prototype preview</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-<style>
- body{margin:0;background:#F4F4F6;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:#1d1d22}
- .wrap{max-width:980px;margin:0 auto;padding:48px 16px}
- .note{display:flex;gap:12px;align-items:flex-start;background:#FFF8E6;border:1px solid #ECD3A3;border-radius:10px;padding:14px 16px;margin-bottom:28px;font-size:14px;line-height:1.5}
- .note i{color:#B26B00;font-size:18px;margin-top:2px}
- h1{font-size:26px;margin:0 0 6px}
- .sub{color:#5f5f68;margin:0 0 22px;font-size:15px}
- .card{display:flex;align-items:center;gap:18px;width:100%;text-align:left;background:#fff;border:1px solid #DFDFE2;border-radius:12px;padding:18px 20px;margin-bottom:12px;cursor:pointer;font:inherit;color:inherit}
- .card:hover,.card:focus-visible{border-color:#0078B3;box-shadow:0 0 0 3px #C9EFFA;outline:none}
- .ico{width:52px;height:52px;border-radius:12px;background:#F0F9FE;color:#0078B3;display:grid;place-items:center;font-size:22px;flex:none}
- .t{flex:1}.t b{font-size:17px}.t div{color:#5f5f68;font-size:14px;margin-top:3px}
- .go{color:#0078B3;font-weight:600;font-size:14px;white-space:nowrap}
- @media(max-width:600px){.go{display:none}}
-</style>
-</head>
-<body>
-<div class="wrap">
- <div class="note"><i class="fa-solid fa-circle-info"></i><div><b>This page isn't part of the prototype.</b> It only tells us which way of working is closest to yours, so the setup you see next is shaped around it. The companies are made up.</div></div>
- <h1>Which sounds most like your work?</h1>
- <p class="sub">Pick the one closest to how your teams work day to day.</p>
- <div id="list"></div>
-</div>
-<script>
-const C=[
- ['crew','fa-road-barrier','Crews on the move','Crews start at a yard and move to a new job most weeks. A hazard assessment opens each day.'],
- ['wo','fa-receipt','Work orders','Work orders come from another system; techs go where the order says and fill in forms for each one.'],
- ['asset','fa-gear','Equipment checks','Checks come due on equipment or stations, by hours, use or the calendar.'],
- ['place','fa-building','Inspections at your places','Branches, offices or sites have inspections every week or month, done by whoever is there.'],
- ['gate','fa-id-card','Who\'s allowed on site','Many contractors. The main question is who is trained and allowed on site today.']];
-document.getElementById('list').innerHTML=C.map(([k,i,t,d])=>`<button class="card" onclick="try{sessionStorage.setItem('fmC','${k}');sessionStorage.removeItem('fmDone')}catch(e){}location.href='app.html#/overview'"><span class="ico"><i class="fa-solid ${i}"></i></span><span class="t"><b>${t}</b><div>${d}</div></span><span class="go">This is us <i class="fa-solid fa-arrow-right"></i></span></button>`).join('');
-</script>
-</body>
-</html>
+<html lang="en"><head><meta charset="utf-8"><title>Field Management · Prototype preview</title>
+<script>try{sessionStorage.removeItem('fmDone');sessionStorage.removeItem('fmC')}catch(e){} location.replace('app.html#/overview');</script>
+</head><body><p><a href="app.html#/overview">Open the Field Management prototype</a></p></body></html>
