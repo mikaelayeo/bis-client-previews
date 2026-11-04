@@ -441,7 +441,7 @@ function navHtml(){ const items=['Home','Profile','Store','Rewards','Purchases',
  const cur=S.route==='home'?'Home':'Field';
  const fieldGo=S.finished?"fm('overview')":S.started?"go(S.route==='home'||S.route==='fm'?'intro':S.route)":"go('intro')";
  return items.map(i=>`<a class="${i===cur?'on':''}" id="nav-${i}" onclick="${i==='Field'?fieldGo:i==='Home'?"go('home')":''}">${i}${i==='Field'&&!S.started?'<span class="new">New</span>':''}</a>`).join(''); }
-const STEPS=[['intro','Welcome'],['how','How your work runs'],['words','Your words'],['structure','Bring it over'],['routine','First routine']];
+const STEPS=[['how','How your work runs'],['words','Your words'],['structure','Bring it over'],['routine','First routine']];
 function stepsHtml(){ const i=STEPS.findIndex(s=>s[0]===S.route);
  return `<div class="steps">${STEPS.map((s,k)=>`<span class="step ${k===i?'on':''} ${k<i?'done':''}"><i>${k<i?'✓':k+1}</i>${s[1]}</span>`).join('')}</div>`; }
 function foot(html){ const f=$('#foot'); if(!html){f.classList.add('hide');return;} f.classList.remove('hide'); $('#footIn').innerHTML=html; }
@@ -473,7 +473,8 @@ function home(){
 function placeNavTip(){ const t=$('#navTip'),a=$('#nav-Field'); if(!t||!a) return; const r=a.getBoundingClientRect(); t.style.top=(r.bottom+window.scrollY+8)+'px'; t.style.left=Math.max(8,Math.min(r.left-14,window.innerWidth-290))+'px'; }
 
 /* ============ Setup ============ */
-function intro(){
+function intro(){ S.route='how'; return how(); }
+function introOld(){
  foot(`<button class="btn sec" onclick="location.href='app.html#/overview'">Back</button><span style="flex:1"></span><button class="btn" onclick="go('how')">Let's go →</button>`);
  return setupHead()+`<div class="v41">${V41.welcomeHtml()}</div>`;
 }
@@ -548,7 +549,7 @@ function applyHow(){ const w=S.where||{}, any=Object.values(w).some(Boolean)||S.
  S.need2={site:!!w.fixed, job:!!(w.newplace||w.sent||call), crew:true};
  S.shape=[...new Set([...(w.fixed?['places']:[]),...(w.newplace?['projects']:[]),...(w.sent||call?['dispatch']:[]),'crews'])]; }
 function how(){ const any=V41.picked().length||S.how;
- foot(`<button class="btn sec" onclick="go('intro')">Back</button><span class="saved">Saved</span><span style="flex:1"></span><span class="sm mut">${V41.picked().length&&!S.how?'One more question':''}</span><button class="btn" onclick="applyHow();go('words')">${any?'Continue':'Skip for now'}</button>`);
+ foot(`<button class="btn sec" onclick="location.href='app.html#/overview'">Back</button><span class="saved">Saved</span><span style="flex:1"></span><span class="sm mut">${V41.picked().length&&!S.how?'One more question':''}</span><button class="btn" onclick="applyHow();go('words')">${any?'Continue':'Skip for now'}</button>`);
  return setupHead()+`<div class="v41"><div class="layout"><div class="card">${V41.qsHtml()}</div><div class="card prev">${V41.prevHtml()}</div></div></div>`; }
 
 function work(){
@@ -944,7 +945,7 @@ function render(){ if(C) TREE=srcTree(S.source);
 $('#client').innerHTML=Object.entries(CLIENTS).map(([k,c])=>`<option value="${k}">${c.type} · ${c.label}</option>`).join('');
 window.addEventListener('resize',placeNavTip);
 document.addEventListener('mousedown',e=>{ if(S.comboOpen&&!e.target.closest('#app [style*="position:relative"]')){ S.comboOpen=false; S.comboQ=''; render(); } });
-reset(new URLSearchParams(location.search).get('c')||'crew');S.started=true;S.route='intro';render();
+reset(new URLSearchParams(location.search).get('c')||'crew');S.started=true;S.route='how';render();
 </script>
 </body>
 </html>
