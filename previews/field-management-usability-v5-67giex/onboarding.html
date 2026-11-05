@@ -15,7 +15,29 @@ a{cursor:pointer}
 .proto{background:#19191a;color:#fff;padding:6px 16px;font-size:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
 .proto .sp{flex:1}.proto a{color:#9cd3f0}
 .proto select{font:inherit;font-size:12px;background:#333;color:#fff;border:1px solid #555;border-radius:3px}
-.top{background:#fff;display:flex;align-items:center;padding:10px 16px;gap:12px;border-bottom:1px solid #eee}
+.obp{--portal-brand:#0D476D;--portal-logo:#0D476D;--portal-nav-active:#0071A8;--pfont:"Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;background:#fff;font-family:var(--pfont)}
+.obp button{border:0;background:none;font:inherit;cursor:pointer;color:inherit}
+.obp .ptop{display:flex;align-items:center;gap:16px;padding:10px 20px;min-height:64px;flex-wrap:wrap}
+.obp .plogo{display:flex;align-items:center;gap:10px;flex:0 0 auto;border-radius:4px;padding:2px 4px 2px 2px}
+.obp .plogo svg{width:42px;height:42px;display:block}
+.obp .plogo-w{display:flex;flex-direction:column;line-height:1;color:#111;text-align:left}
+.obp .plogo-w b{font:900 21px/20px var(--pfont);letter-spacing:.04em}
+.obp .plogo-w small{font:400 10.5px/13px var(--pfont);letter-spacing:.22em;color:#444;margin-top:2px}
+.obp .pright{margin-left:auto;display:flex;align-items:center;gap:14px;color:#6B6B70;flex-wrap:wrap;justify-content:flex-end}
+.obp .psearch{display:flex;align-items:center;gap:8px;height:30px;width:230px;border:1px solid #B2B2B3;border-radius:4px;padding:0 8px;background:#fff}
+.obp .psearch input{border:0;outline:0;flex:1;min-width:0;font-size:13px;background:transparent;color:#19191A}
+.obp .psearch i{font-size:13px;color:#888}
+.obp .ib{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:4px;color:#6B6B70;font-size:17px}
+.obp .pav{width:28px;height:28px;border-radius:50%;background:#D9D9D9;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:12px}
+.obp .plogout{display:inline-flex;align-items:center;gap:6px;font-size:14px;color:#6B6B70;padding:4px 6px;border-radius:4px}
+.obp .plogout:hover,.obp .pnav button:hover{text-decoration:underline}
+.obp .pnav{display:flex;align-items:center;gap:2px;min-height:38px;padding:0 14px;background:#F5F5F5;border-top:1px solid #E5E5E5;border-bottom:1px solid #E5E5E5;overflow-x:auto;scrollbar-width:thin}
+.obp .pnav button{position:relative;padding:9px 8px;font-size:14px;line-height:20px;color:#2B2B2B;white-space:nowrap}
+.obp .pnav button.on{font-weight:700;color:var(--portal-nav-active);text-decoration:none}
+.obp .pnav button.on::after{content:"";position:absolute;left:8px;right:8px;bottom:0;height:3px;border-radius:3px 3px 0 0;background:var(--portal-nav-active)}
+.obp .pnav .pinfo{margin-left:auto;width:26px;height:26px;border-radius:3px;background:var(--portal-nav-active);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:12px;padding:0;flex:0 0 auto}
+.obp .pnav .pinfo::after{display:none}
+@media(max-width:760px){.obp .psearch{width:160px}}
 .bis{font-weight:800;font-size:22px;color:#2b2b3a;letter-spacing:-1px}.bis small{font-weight:400;font-size:10px;letter-spacing:0;display:inline-block;line-height:1.1;border-left:1px solid #999;padding-left:6px;margin-left:6px;vertical-align:middle}
 .top .sp{flex:1}.search{border:1px solid var(--line);border-radius:3px;padding:5px 10px;width:200px;color:#999;font-size:13px}
 nav.main{display:flex;gap:26px;padding:0 16px;overflow-x:auto;white-space:nowrap;background:#fff;border-bottom:1px solid #e3e3e3}
@@ -308,15 +330,17 @@ main{max-width:1320px;margin:0 auto;padding:16px 24px 90px}
 </head>
 <body>
 
-<div class="proto"><b>Field Management · prototype preview</b>
+<div class="proto"><b>Field Management prototype</b>
 <select id="client" onchange="reset(this.value)" hidden aria-hidden="true" tabindex="-1"></select>
 <select id="variant" hidden aria-hidden="true" tabindex="-1"><option value="tree">tree</option></select>
 <select id="day" hidden aria-hidden="true" tabindex="-1" onchange="S.day=this.value;render()"><option value="1">Day 1</option><option value="7">A week later</option></select>
 <select id="wave" hidden aria-hidden="true" tabindex="-1"><option value="W3"></option></select>
 <span class="sp" style="flex:1"></span><a onclick="try{sessionStorage.removeItem('fmDone')}catch(e){}location.href='app.html#/overview'" style="cursor:pointer">Restart</a></div>
 <script>function obMore(){} function obWave(){} </script>
-<div class="top"><span class="bis">BIS<small>QAQC TEST<br>ENVIRONMENT</small></span><span class="sp"></span><span id="who"></span><span class="search">Search User</span><span class="mut">?</span><span class="mut">Log Out ›</span></div>
-<nav class="main" id="nav"></nav>
+
+<header class="portal obp"><div class="ptop"><button class="plogo" aria-label="Portal home" onclick="go('home')"><svg viewBox="0 0 44 44" aria-hidden="true" focusable="false"><circle cx="22" cy="22" r="19.5" fill="none" stroke="var(--portal-logo)" stroke-width="3"></circle><circle cx="22" cy="22" r="14" fill="var(--portal-logo)"></circle><path d="M22 9.5 L26 22 L22 34.5 L18 22 Z" fill="#FEFEFE"></path><path d="M22 9.5 L26 22 L18 22 Z" fill="#26B1DC"></path><circle cx="22" cy="22" r="2" fill="var(--portal-logo)"></circle></svg><span class="plogo-w"><b>NORTHWIND</b><small>FIELD SERVICES</small></span></button>
+ <div class="pright"><span id="who" hidden></span><label class="psearch"><input type="search" placeholder="Search User" aria-label="Search user"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i></label><button class="ib" aria-label="Help"><i class="fa-regular fa-circle-question" aria-hidden="true"></i></button><span class="pav" aria-label="Your account"><i class="fa-solid fa-user" aria-hidden="true"></i></span><button class="plogout">Log Out <i class="fa-solid fa-angle-right" aria-hidden="true"></i></button></div></div>
+<nav class="pnav" id="nav" aria-label="Portal"></nav></header>
 <main id="app"></main>
 <div class="foot hide" id="foot"><div class="in" id="footIn"></div></div>
 <div class="launcher hide" id="launcher"></div>
@@ -556,10 +580,10 @@ const $=s=>document.querySelector(s);
 function go(r){ S.route=r; if(r!=='home') S.started=true; render(); window.scrollTo(0,0); }
 function fm(p,site){ S.route='fm'; S.fmPage=p; S.fmSite=site||null; render(); window.scrollTo(0,0); }
 function toggleNotes(){ S.notes=!S.notes; $('#notesBtn').textContent=S.notes?'Hide design notes':'Show design notes'; render(); }
-function navHtml(){ const items=['Home','Profile','Store','Rewards','Purchases','Users','Reporting','Calendar','Equipment','Folders','QR','Field','Admin'];
+function navHtml(){ const items=['Home','Profile','Store','Rewards','Purchases','Users','Reporting','Calendar','Assets','Folders','QR','Field','Admin'];
  const cur=S.route==='home'?'Home':'Field';
  const fieldGo=S.finished?"fm('overview')":S.started&&S.route!=='home'&&S.route!=='fm'?"go(S.route)":"go('welcome')";
- return items.map(i=>`<a class="${i===cur?'on':''}" id="nav-${i}" onclick="${i==='Field'?fieldGo:i==='Home'?"go('home')":''}">${i}${i==='Field'&&!S.started?'<span class="new">New</span>':''}</a>`).join(''); }
+ return items.map(i=>`<button class="${i===cur?'on':''}" id="nav-${i}" aria-current="${i===cur?'page':'false'}" onclick="${i==='Field'?fieldGo:i==='Home'?"go('home')":''}">${i}${i==='Field'&&!S.started?'<span class="new">New</span>':''}</button>`).join('')+'<button class="pinfo" aria-label="About this portal"><i class="fa-solid fa-info"></i></button>'; }
 const STEPS=[['how','How your work runs'],['work','Found in your portal'],['words','Your words'],['structure','Bring it over'],['routine','First routine']];
 function stepsHtml(){ const ST=STEPS.filter(s=>s[0]!=='work'||AI()); const i=ST.findIndex(s=>s[0]===S.route);
  return `<div class="steps">${ST.map((s,k)=>`<span class="step ${k===i?'on':''} ${k<i?'done':''}"><i>${k<i?'✓':k+1}</i>${s[1]}</span>`).join('')}</div>`; }
