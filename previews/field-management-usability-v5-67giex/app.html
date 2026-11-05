@@ -2287,6 +2287,20 @@ html[data-b6tab="768"] .ov:has(.modal.b6-fs){left:50%;right:auto;width:768px;tra
 .sv-min .sv-open .rv-btn,.sv-min .sv-menu>.rv-btn{justify-content:center}
 .sv-min .sv-mnote{margin:4px 0 0;font-size:11px;color:#8a8a90}
 
+
+.svw{max-width:640px;margin:24px auto 0;padding:40px 44px}
+.svw-k{display:inline-block;background:#0078B3;color:#fff;font-size:11px;font-weight:700;border-radius:10px;padding:2px 9px;letter-spacing:.02em}
+.svw h2{font-size:26px;margin:8px 0 6px}
+.svw-s{color:#5F6168;margin:0 0 18px;font-size:15px}
+.svw-l{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.svw-l li{display:flex;gap:12px;align-items:flex-start;font-size:14px}
+.svw-l li span:last-child{padding-top:5px}
+.svw-i{width:30px;height:30px;border-radius:8px;background:#F0F9FE;color:#0078B3;display:grid;place-items:center;flex:none;font-size:13px}
+.svw-a{display:flex;gap:14px;align-items:center;margin-top:24px;flex-wrap:wrap}
+.svw-go{padding:10px 22px;font-size:15px;font-weight:600;gap:8px}
+.svw-n{color:#5F6168;font-size:13px}
+@media(max-width:700px){.svw{padding:24px}}
+
 </style>
 <style id="cm-css">
 
@@ -10010,15 +10024,21 @@ svPin('svcode','','The client-facing <b>code</b> on Sites and Jobs is out of the
 
  
 const svOnbUrl=()=>SV_ONB.href+(SV_ONB.href.includes('?')?'&':'?')+'back='+encodeURIComponent(SV_ONB.back+'#/overview');
-b5GoSetup=function(){ if(RO()) return; location.href=svOnbUrl(); };
+ 
+b5GoSetup=function(){ if(RO()) return; location.href=svOnbUrl()+'&start=1'; };
  
 { let fromOnb=false; try{ if(new URLSearchParams(location.search).get('onb')==='1') sessionStorage.setItem('fmFromOnb','1'); fromOnb=sessionStorage.getItem('fmFromOnb')==='1'; }catch(e){ fromOnb=/[?&]onb=1/.test(location.search); }   
-  const _r=resetAll; resetAll=function(){ if(fromOnb){ try{ sessionStorage.removeItem('fmFromOnb'); }catch(e){} location.href=svOnbUrl(); return; } return _r.apply(this,arguments); }; }
+  const _r=resetAll; resetAll=function(){ const x=_r.apply(this,arguments); if(fromOnb){ S.empty=S.empty||{}; S.empty.ov=true; nav({page:'overview',panel:null}); } return x; }; }
+ 
+const svWelcome=()=>`<div class="card svw"><span class="svw-k">New in BIS</span><h2>Welcome to Field Management</h2><p class="svw-s">See that the work in the field gets done, every day.</p>
+ <ul class="svw-l">${[['fa-solid fa-location-dot','All your places and work in one list'],['fa-solid fa-user-group','Know who’s working where'],['fa-solid fa-repeat','Set the checks that are due, and when'],['fa-solid fa-chart-simple','See what’s done and what’s missing today'],['fa-solid fa-mobile-screen','Your people fill it in on their phone']].map(([ic,t])=>`<li><span class="svw-i">${I(ic)}</span><span>${t}</span></li>`).join('')}</ul>
+ <div class="svw-a">${RO()?'<span class="svw-n">An admin sets this up.</span>':`<button class="b b-primary svw-go" onclick="b5GoSetup()"><span>Get started</span>${I('fa-solid fa-arrow-right')}</button><span class="svw-n">${I('fa-regular fa-clock')} About 10 minutes. Nothing in your portal changes.</span>`}</div></div>`;
  
 { const _rbo=reviewBar; reviewBar=function(){ const h=_rbo.apply(this,arguments), at=h.indexOf('<button class="rv-btn" onclick="resetAll()">'); return at<0?h:h.slice(0,at)+`<a class="rv-btn" href="${svOnbUrl()}" data-tip="Open this version's onboarding (setup)">Open onboarding ↗</a>`+h.slice(at); }; }
 { const _ov=overviewPage; overviewPage=function(){ return _ov.apply(this,arguments)
     .replace('Set up Field Management in four short steps: Sites or Jobs, your first one, a starter ritual, and a crew.','Setup opens on its own page: how your work runs, what you call things, bringing over what you have, and a first routine.')
-    .replace('<span>Set up Field Management</span>','<span>Get started</span>'); }; }
+    .replace('<span>Set up Field Management</span>','<span>Get started</span>')
+    .replace(/<div class="card"><div class="es"><span class="es-i">[^]*?<b>Nothing to track yet<\/b>[^]*?<\/div><\/div><\/div>/,()=>svWelcome()); }; }
 { const _nc=notesCard; notesCard=function(){ const h=_nc.apply(this,arguments);
     const g=`<div class="var-g"><h4>Onboarding</h4><a class="var-b" href="${svOnbUrl()}">${I('fa-solid fa-wand-magic-sparkles')}<span>Open onboarding (${SV_ONB.label})</span><small>own page</small></a><p class="cap">Setup is its own page, one per version: W1 and W2 open W1, the MVP opens W3, the ideal opens the ideal. Finishing it brings you back to this Overview.</p></div>`;
     return h.replace(/<div class="var-g"><h4>Batch\s5 · first run<\/h4>[\s\S]*?<\/p><\/div>/,g); }; }
@@ -10835,7 +10855,7 @@ routeInit();
 </script>
 <script>
 (function(){ let done=false,c='crew'; try{ done=sessionStorage.getItem('fmDone')==='1'; c=sessionStorage.getItem('fmC')||'crew'; }catch(e){}
- window.b5GoSetup=function(){ location.href='onboarding.html?c='+encodeURIComponent(c); };
+ window.b5GoSetup=function(){ location.href='onboarding.html?c='+encodeURIComponent(c)+'&start=1'; };
  const _nav=window.nav; window.nav=function(o){ if(o&&o.page==='b5setup'){ b5GoSetup(); return; } return _nav.apply(this,arguments); };
  if(location.hash.indexOf('#/setup')===0) location.hash='#/overview';
  S.empty=S.empty||{}; S.empty.ov=!done; render(); })();

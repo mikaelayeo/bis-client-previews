@@ -313,7 +313,7 @@ main{max-width:1320px;margin:0 auto;padding:16px 24px 90px}
 <select id="variant" hidden aria-hidden="true" tabindex="-1"><option value="tree">tree</option></select>
 <select id="day" hidden aria-hidden="true" tabindex="-1" onchange="S.day=this.value;render()"><option value="1">Day 1</option><option value="7">A week later</option></select>
 <select id="wave" hidden aria-hidden="true" tabindex="-1"><option value="W3"></option></select>
-<span class="sp" style="flex:1"></span><a href="index.html">Change company</a><a onclick="reset()" style="cursor:pointer">Restart</a></div>
+<span class="sp" style="flex:1"></span><a onclick="try{sessionStorage.removeItem('fmDone')}catch(e){}location.href='app.html#/overview'" style="cursor:pointer">Restart</a></div>
 <script>function obMore(){} function obWave(){} </script>
 <div class="top"><span class="bis">BIS<small>QAQC TEST<br>ENVIRONMENT</small></span><span class="sp"></span><span id="who"></span><span class="search">Search User</span><span class="mut">?</span><span class="mut">Log Out ›</span></div>
 <nav class="main" id="nav"></nav>
@@ -681,7 +681,7 @@ function newSafetyHtml(){ if(S.bisUse==null) S.bisUse=S.client==='gate'?'trainin
  <div class="sm mut" style="margin-top:6px"><i class="fa-solid fa-circle-info"></i> Picked from your form history. Change it if it's not right.</div></div>`; }
 function how(){ if(AI()&&!S.prefilled){ const p=PREFILL[S.client]||{where:{},how:null}; S.where={...p.where}; S.how=p.how; S.prefilled=true; }
  const any=V41.picked().length||S.how;
- foot(`<button class="btn sec" onclick="location.href='app.html#/overview'">Back</button><span class="saved">Saved</span><span style="flex:1"></span><span class="sm mut">${V41.picked().length&&!S.how?'One more question':''}</span><button class="btn" onclick="applyHow();go(AI()?'work':'words')">${any?'Continue':'Skip for now'}</button>`);
+ foot(`<button class="btn sec" onclick="obBack()">Back</button><span class="saved">Saved</span><span style="flex:1"></span><span class="sm mut">${V41.picked().length&&!S.how?'One more question':''}</span><button class="btn" onclick="applyHow();go(AI()?'work':'words')">${any?'Continue':'Skip for now'}</button>`);
  return setupHead()+`<div class="v41"><div class="layout"><div class="card">${AI()?'<div class="aifill"><i class="fa-solid fa-wand-magic-sparkles"></i><span><b>We filled this in from your portal.</b> Change anything that isn\'t right.</span></div>':''}${V41.qsHtml()}${AI()?newSafetyHtml():''}</div><div class="card prev">${V41.prevHtml()}</div></div></div>`; }
 
 function work(){
@@ -1178,6 +1178,10 @@ function obWave(w){ const s=document.getElementById('wave'); if(!s||s.value===w)
 function obVer(){ document.querySelectorAll('#obVer [data-w]').forEach(b=>{ const on=b.dataset.w===WAVE; b.classList.toggle('on',on); b.setAttribute('aria-pressed',on); }); }
 { const _r=render; render=function(){ const x=_r.apply(this,arguments); obVer(); return x; }; }
 reset(new URLSearchParams(location.search).get('c')||'crew');S.route='home';render();document.getElementById('wave').value=WAVE; if(LOCKED){ const sel=document.getElementById('wave'); sel.outerHTML='<b>'+sel.options[sel.selectedIndex].text+'</b>'; }
+ 
+function obBack(){ const b=new URLSearchParams(location.search).get('back'); location.href=b&&/^[\w./-]+\.html(#[\w/-]*)?$/.test(b)&&!b.startsWith('/')?b:'app.html#/overview'; }
+ 
+if(new URLSearchParams(location.search).get('start')) go('intro');
 </script>
 </body>
 </html>
